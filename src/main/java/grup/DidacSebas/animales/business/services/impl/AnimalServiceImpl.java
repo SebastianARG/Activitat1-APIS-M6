@@ -19,7 +19,7 @@ public class AnimalServiceImpl implements AnimalServices {
 
     @Override
     public Optional<Animal> read(Long id) {
-        return Optional.empty();
+        return Optional.ofNullable(animals.get(id));
     }
 
 
