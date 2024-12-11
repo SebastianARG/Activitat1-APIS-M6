@@ -97,22 +97,27 @@ public class AnimalController {
         //return ((animalServices.create(animal) == -1)?false:true);
     }
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@RequestBody Animal animal){
-        //Ejecutamos el código que llama a update de services
-        Optional<Animal> a = animalServices.read(animal.getId());
-        if(a.isPresent()){
-            animalServices.update(animal);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Animal updatedAnimal) {
+        Optional<Animal> opt = animalServices.read(id);
+        if (opt.isPresent()) {
+            animalServices.update(updatedAnimal);
+            return ResponseEntity.ok("Animal actualizado con éxito.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal no encontrado.");
         }
-
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id){
-        //Ejecutamos el código que llama a delete de services
-        animalServices.delete(id);
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        Optional<Animal> opt = animalServices.read(id);
+        if (opt.isPresent()) {
+            animalServices.delete(id);
+            return ResponseEntity.ok("Animal eliminado con éxito.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal no encontrado.");
+        }
     }
+
 
 
 }
