@@ -1,8 +1,10 @@
 package grup.DidacSebas.animales.presentation.controllers;
 
-
 import grup.DidacSebas.animales.business.model.Animal;
 import grup.DidacSebas.animales.business.services.interfaces.AnimalServices;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.Optional;
 
+@Tag(name = "Animales API", description = "Operaciones para gestionar animales")
 @RestController
 @RequestMapping("/animals")
 public class AnimalController {
@@ -19,85 +22,43 @@ public class AnimalController {
     @Autowired
     private AnimalServices animalServices;
 
-
+    @Operation(summary = "Obtener todos los animales", description = "Este endpoint retorna la información de todos los animales")
     @GetMapping
-    public ResponseEntity<?> getAll(){
-
-        //Ejecutamos el código que llama a gettAll de services
+    public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(animalServices.getAll());
     }
+
+    @Operation(summary = "Obtener información de un animal por ID", description = "Este endpoint retorna la información de un animal específico mediante su ID")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id){
+    public ResponseEntity<?> getById(
+            @Parameter(description = "ID del animal", required = true) @PathVariable Long id) {
         Optional<Animal> opt = animalServices.read(id);
-        if(!opt.isPresent()){
-            return new ResponseEntity<>("No hay animal",HttpStatus.NOT_FOUND);
+        if (!opt.isPresent()) {
+            return new ResponseEntity<>("No hay animal", HttpStatus.NOT_FOUND);
         }
-        //Ejecutamos el código que llama a read de services
-        //return animalServices.read(id);
         return ResponseEntity.ok(opt.get());
     }
 
-    /*
-{
-    "id": 1,
-    "name": "Lion",
-    "age": 8,
-    "gender": "male",
-    "weight": 190,
-    "species": "panthera"
-},
-{
-    "id": 2,
-    "name": "Elephant",
-    "age": 25,
-    "gender": "female",
-    "weight": 5400,
-    "species": "loxodonta"
-},
-{
-    "id": 3,
-    "name": "Giraffe",
-    "age": 15,
-    "gender": "female",
-    "weight": 1200,
-    "species": "camelopardalis"
-},
-{
-    "id": 4,
-    "name": "Kangaroo",
-    "age": 7,
-    "gender": "male",
-    "weight": 85,
-    "species": "macropus"
-},
-{
-    "id": 5,
-    "name": "Penguin",
-    "age": 3,
-    "gender": "female",
-    "weight": 23,
-    "species": "spheniscidae"
-}
-
-     */
+    @Operation(summary = "Añadir un nuevo animal", description = "Este endpoint permite añadir un nuevo animal")
     @PostMapping
-    public ResponseEntity<?> add(@RequestBody Animal animal){
-            Long id = animalServices.create(animal);
-            if(id!=-1){
-                URI uri = UriComponentsBuilder
-                        .fromPath("/products/{id}")
-                        .buildAndExpand(id)
-                        .toUri();
-                return ResponseEntity.created(uri).build();
-            }
-            else{
-                return new ResponseEntity<>("No se pudo crear el producto",HttpStatus.CREATED);
-            }
-        //Ejecutamos el código que llama a create de services
-        //return ((animalServices.create(animal) == -1)?false:true);
+    public ResponseEntity<?> add(
+            @Parameter(description = "Datos del animal a añadir", required = true) @RequestBody Animal animal) {
+        Long id = animalServices.create(animal);
+        if (id != -1) {
+            URI uri = UriComponentsBuilder.fromPath("/animals/{id}")
+                    .buildAndExpand(id)
+                    .toUri();
+            return ResponseEntity.created(uri).build();
+        } else {
+            return new ResponseEntity<>("No se pudo crear el animal", HttpStatus.CREATED);
+        }
     }
+
+    @Operation(summary = "Actualizar un animal existente", description = "Este endpoint actualiza la información de un animal específico")
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Animal updatedAnimal) {
+    public ResponseEntity<?> update(
+            @Parameter(description = "ID del animal a actualizar", required = true) @PathVariable Long id,
+            @Parameter(description = "Datos actualizados del animal", required = true) @RequestBody Animal updatedAnimal) {
         Optional<Animal> opt = animalServices.read(id);
         if (opt.isPresent()) {
             animalServices.update(updatedAnimal);
@@ -107,8 +68,10 @@ public class AnimalController {
         }
     }
 
+    @Operation(summary = "Eliminar un animal", description = "Este endpoint elimina un animal específico mediante su ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(
+            @Parameter(description = "ID del animal a eliminar", required = true) @PathVariable Long id) {
         Optional<Animal> opt = animalServices.read(id);
         if (opt.isPresent()) {
             animalServices.delete(id);
@@ -117,7 +80,4 @@ public class AnimalController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal no encontrado.");
         }
     }
-
-
-
 }
