@@ -1,0 +1,16 @@
+
+L’activitat es realitzarà en els grups ja formats per a l'activitat 1.
+Per al projecte s’ha d'utilitzar el repositori gitHub.
+En aquesta segona activitat l’API  REST s’hauran de fer els canvis necessaris i afegir la funcionalitat requerida per afegir-li aquestes característiques:
+1. Les excepcions de la capa de presentació seran gestionades de forma centralitzada  creant la classe  que hereti de ResponseEntityExceptionHandler, les classes de les excepcions personalitzades que s'utilitzin i la de ErrorResponse. Totes les classes de la gestió d’excepcions s’ubicaran al paquet config ubicat dins de backend.presentation.
+2. Almenys un mètode del RestController ha d’utilitzar un DTO en  compte de l’Entity utilitzada. Aquest DTO s’ubicarà al paquet dins del model.dtos.
+3. Generar la documentació de l’API amb Swagger.
+3. Incorporar la capa d’Integració amb la base de dades H2 i JPA amb Hivernate
+Haureu d'utilitzar l’eina Postman per a testejar la vostra API.
+
+
+Recuento de tareas:
+1 - Falta
+2 - Falta
+3 - Hecho(Falta los nuevos métodos a añadir)
+4 - Falta
