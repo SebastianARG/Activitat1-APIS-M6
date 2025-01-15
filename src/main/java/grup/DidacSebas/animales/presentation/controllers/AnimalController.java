@@ -1,7 +1,10 @@
 package grup.DidacSebas.animales.presentation.controllers;
 
-import grup.DidacSebas.animales.business.model.Animal;
+import grup.DidacSebas.animales.business.model.AnimalMapper;
+import grup.DidacSebas.animales.business.model.dtos.AnimalDTO;
+import grup.DidacSebas.animales.business.model.jpa.Animal;
 import grup.DidacSebas.animales.business.services.interfaces.AnimalServices;
+import grup.DidacSebas.animales.presentation.exceptions.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Tag(name = "Animales API", description = "Operaciones para gestionar animales")
 @RestController
@@ -24,19 +28,19 @@ public class AnimalController {
 
     @Operation(summary = "Obtener todos los animales", description = "Este endpoint retorna la información de todos los animales")
     @GetMapping
-    public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(animalServices.getAll());
+    public ResponseEntity<List<AnimalDTO>> getAll() {
+        List<Animal> all = animalServices.getAll();
+        List<AnimalDTO> dtoList = all.stream().map(AnimalMapper::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(dtoList);
     }
 
     @Operation(summary = "Obtener información de un animal por ID", description = "Este endpoint retorna la información de un animal específico mediante su ID")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(
+    public ResponseEntity<AnimalDTO> getById(
             @Parameter(description = "ID del animal", required = true) @PathVariable Long id) {
-        Optional<Animal> opt = animalServices.read(id);
-        if (!opt.isPresent()) {
-            return new ResponseEntity<>("No hay animal", HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok(opt.get());
+        Animal animal = animalServices.read(id).orElseThrow(() ->
+                new ResourceNotFoundException("Animal con ID " + id + " no encontrado."));
+        return ResponseEntity.ok(AnimalMapper.toDTO(animal));
     }
 
     @Operation(summary = "Añadir un nuevo animal", description = "Este endpoint permite añadir un nuevo animal")
@@ -50,34 +54,28 @@ public class AnimalController {
                     .toUri();
             return ResponseEntity.created(uri).build();
         } else {
-            return new ResponseEntity<>("No se pudo crear el animal", HttpStatus.CREATED);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No se pudo crear el animal");
         }
     }
 
     @Operation(summary = "Actualizar un animal existente", description = "Este endpoint actualiza la información de un animal específico")
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(
+    public ResponseEntity<String> update(
             @Parameter(description = "ID del animal a actualizar", required = true) @PathVariable Long id,
             @Parameter(description = "Datos actualizados del animal", required = true) @RequestBody Animal updatedAnimal) {
-        Optional<Animal> opt = animalServices.read(id);
-        if (opt.isPresent()) {
-            animalServices.update(updatedAnimal);
-            return ResponseEntity.ok("Animal actualizado con éxito.");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal no encontrado.");
-        }
+        animalServices.read(id).orElseThrow(() ->
+                new ResourceNotFoundException("Animal con ID " + id + " no encontrado."));
+        animalServices.update(updatedAnimal);
+        return ResponseEntity.ok("Animal actualizado con éxito.");
     }
 
     @Operation(summary = "Eliminar un animal", description = "Este endpoint elimina un animal específico mediante su ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(
             @Parameter(description = "ID del animal a eliminar", required = true) @PathVariable Long id) {
-        Optional<Animal> opt = animalServices.read(id);
-        if (opt.isPresent()) {
-            animalServices.delete(id);
-            return ResponseEntity.ok("Animal eliminado con éxito.");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal no encontrado.");
-        }
+        animalServices.read(id).orElseThrow(() ->
+                new ResourceNotFoundException("Animal con ID " + id + " no encontrado."));
+        animalServices.delete(id);
+        return ResponseEntity.ok("Animal eliminado con éxito.");
     }
 }
